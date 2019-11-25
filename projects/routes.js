@@ -32,6 +32,43 @@ router.get("/api/projects/:id", (req, res) => {
       res.status(500).json({ errorMessage: "Unable to locate project" });
     });
 });
+router.get("/api/projects/:id/details", (req, res) => {
+  db.findProjectById(req.params.id)
+    .then(project => {
+      project.map(project => {
+        project.completed = project.completed == true;
+        project.tasks = [];
+        project.resources = [];
+        db.findTasks(req.params.id)
+          .then(tasks => {
+            tasks.map(task => {
+              task.completed = task.completed == true;
+              project.tasks.push(task);
+            });
+          })
+          .catch(() => {
+            res
+              .status(500)
+              .json({ errorMessage: "Unable to locate project tasks" });
+          });
+        db.findProjectResources(req.params.id)
+          .then(resources => {
+            resources.map(resource => {
+              project.resources.push(resource);
+            });
+          })
+          .catch(() => {
+            res
+              .status(500)
+              .json({ errorMessage: "Unable to locate project resources" });
+          });
+      });
+      res.status(200).json(project);
+    })
+    .catch(() => {
+      res.status(500).json({ errorMessage: "Unable to locate project" });
+    });
+});
 router.get("/api/projects/:id/tasks", (req, res) => {
   db.findTasks(req.params.id)
     .then(tasks => {
