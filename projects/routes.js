@@ -129,10 +129,93 @@ router.post("/api/projects", (req, res) => {
       res.status(500).json({ errorMessage: "Unable to add project" });
     });
 });
+router.put("/api/projects/:id", (req, res) => {
+  const project = req.body;
+  const id = req.params.id;
+  db.updateProject(id, project)
+    .then(() => {
+      res.status(202);
+      db.findProjects()
+        .then(projects => {
+          projects.map(project => {
+            project.completed = project.completed == true;
+          });
+          res.status(200).json(projects);
+        })
+        .catch(() => {
+          res.status(500).json({ errorMessage: "Unable to access database" });
+        });
+    })
+    .catch(() => {
+      res.status(500).json({ errorMessage: "Unable to update project" });
+    });
+});
+router.delete("/api/projects/:id", (req, res) => {
+  const id = req.params.id;
+  db.removeProject(id)
+    .then(() => {
+      res.status(202);
+      db.findProjects()
+        .then(projects => {
+          projects.map(project => {
+            project.completed = project.completed == true;
+          });
+          res.status(200).json(projects);
+        })
+        .catch(() => {
+          res.status(500).json({ errorMessage: "Unable to access database" });
+        });
+    })
+    .catch(() => {
+      res.status(500).json({ errorMessage: "Unable to remove project" });
+    });
+});
 router.post("/api/projects/:id/tasks", (req, res) => {
   const task = req.body;
   task.projectId = req.params.id;
   db.insertTask(task)
+    .then(() => {
+      res.status(202);
+      db.findTasks(req.params.id)
+        .then(tasks => {
+          tasks.map(task => {
+            task.completed = task.completed == true;
+          });
+          res.status(200).json(tasks);
+        })
+        .catch(() => {
+          res.status(500).json({ errorMessage: "Unable to locate project" });
+        });
+    })
+    .catch(() => {
+      res.status(500).json({ errorMessage: "Unable to add task" });
+    });
+});
+router.put("/api/projects/:id/tasks/:taskId", (req, res) => {
+  const task = req.body;
+  const id = req.params.taskId;
+  task.projectId = req.params.id;
+  db.updateTask(id, task)
+    .then(() => {
+      res.status(202);
+      db.findTasks(req.params.id)
+        .then(tasks => {
+          tasks.map(task => {
+            task.completed = task.completed == true;
+          });
+          res.status(200).json(tasks);
+        })
+        .catch(() => {
+          res.status(500).json({ errorMessage: "Unable to locate project" });
+        });
+    })
+    .catch(() => {
+      res.status(500).json({ errorMessage: "Unable to add task" });
+    });
+});
+router.delete("/api/projects/:id/tasks/:taskId", (req, res) => {
+  const id = req.params.taskId;
+  db.removeTask(id)
     .then(() => {
       res.status(202);
       db.findTasks(req.params.id)
