@@ -250,5 +250,40 @@ router.post("/api/resources", (req, res) => {
       res.status(500).json({ errorMessage: "Unable to add resource" });
     });
 });
+router.put("/api/resources/id", (req, res) => {
+  const resource = req.body;
+  const id = req.params.id;
+  db.updateResource(id, resource)
+    .then(() => {
+      res.status(202);
+      db.findResources()
+        .then(resources => {
+          res.status(200).json(resources);
+        })
+        .catch(() => {
+          res.status(500).json({ errorMessage: "Unable to access database" });
+        });
+    })
+    .catch(() => {
+      res.status(500).json({ errorMessage: "Unable to add resource" });
+    });
+});
+router.delete("/api/resources/id", (req, res) => {
+  const id = req.params.id;
+  db.removeResource(id)
+    .then(() => {
+      res.status(202);
+      db.findResources()
+        .then(resources => {
+          res.status(200).json(resources);
+        })
+        .catch(() => {
+          res.status(500).json({ errorMessage: "Unable to access database" });
+        });
+    })
+    .catch(() => {
+      res.status(500).json({ errorMessage: "Unable to add resource" });
+    });
+});
 
 module.exports = router;
